@@ -33,3 +33,4 @@ Forge currently takes the project directory name and automatically uses that as 
 3. Add more compatible languages and OS's
 4. Add more compatible default libraries.
 5. More user customization, (config?). 
+6. more verbosity bewteen commands as well as quiet and verbose flags

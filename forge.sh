@@ -8,10 +8,10 @@
 # | and compile multi-directory c++ projects based on my own 		|
 # | preferences (and really just because I like making my own tools).	|
 # |									|
-#_|_____VERSION__________ 						|
-#			 |						|
-	forge_ver=0.25	#|						|
-#________________________|			created: 	29AUG24	|
+#___________VERSION__________ 						|
+#			     |						|
+	forge_ver=0.25	    #|			created: 	29AUG24	|
+#____________________________|						|
 # |_____________________________________________________________________|
 
 #				   ***
@@ -26,7 +26,6 @@ PRJ_PATH=$PWD/
 BLD_PATH=${PRJ_PATH}build/
 SRC_PATH=${PRJ_PATH}src/
 INC_PATH=${PRJ_PATH}include/
-
 
 LINKAGE_FILE=${BLD_PATH}linkage
 #  _____________________________________________________________________
@@ -112,7 +111,7 @@ function assert_project_files() {
 
 
 	if [[ $verbose != "" ]]; then
-		verbose="${verbose}files or directories missing. Please run \e[30;1m[\e[33;1mforge -s\e[0m\e[30;1m]\e[0m to create the missing files."
+		verbose="${verbose}\e[31;1mFILES OR DIRECTORIES MISSING. \e[0mPlease run \e[30;1m[\e[33;1mforge --setup\e[0m\e[30;1m]\e[0m to create the missing files."
 		if [[ $1 -eq 1 ]]; then
 			echo $verbose
 		fi
@@ -182,17 +181,22 @@ function time_stamp() {
 
 
 function update_obj_files() {
-	local $which_files
+	local num_files=0
+	local which_files="\n"
+
 	cd ${BLD_PATH}
 	while [ $# -gt 0 ]; do
 		if [[ !($(cat ${BLD_PATH}timestamps) =~ $(echo $(date -r ${PRJ_PATH}$1)) ) ]] || [[ ! -e $(echo $1 | sed 's/cpp/o/g' | sed 's/src\///g') ]]; then
 			g++ -c ${PRJ_PATH}$1
-			which_files="$which_files $1"
+			which_files="$which_files \e[36m*bang* \e[0m$1\n"
+			num_files=$num_files+1
 		fi
 		shift
 	done
 	cd ..
-	echo $which_files
+	if [[ num_files -gt 0 ]]; then
+		echo $which_files
+	fi
 }
 
 
@@ -210,7 +214,6 @@ function clean() {
 
 
 function clean_all() {
-	rm $PRJ_EXE
 	rm main.cpp
 	rm -r ${BLD_PATH}
 	rm -r ${SRC_PATH}
@@ -222,7 +225,7 @@ function clean_all() {
 if [[ $# -eq 0 ]]; then
 	if ($(assert_project_files 0) ); then
 		SRC_FILES=$(find -iname '*.cpp')
-		echo $(update_obj_files $SRC_FILES)
+		echo -e $(update_obj_files $SRC_FILES)
 		$(time_stamp $SRC_FILES)
 		OBJ_FILES=$(find ${BLD_PATH}*.o)
 
@@ -235,7 +238,7 @@ if [[ $# -eq 0 ]]; then
 
 
 		if (g++ -o $PRJ_EXE $OBJ_FILES $LINKAGE); then
-			echo -e "\n\e[30;1m-- \e[32;1mforge succesful \e[30;1m --\e[0m\n"
+			echo -e "\e[30;1m-- \e[32;1mforge succesful \e[30;1m --\e[0m\n"
 		else
 			echo -e "\n\e[30;1m-- \e[31;1mforge failed \e[30;1m --\e[0m\n"
 		fi
@@ -268,9 +271,11 @@ while [ $# -gt 0 ]; do
 		echo -e $(version)
 		;;
 	-c | --clean)
-		$(clean)
+		echo 'sweeping...'
+		echo -e $(clean)
 		;;
 	--clean-all)
+		echo 'sweeping...'
 		echo -e $(clean_all)
 	esac
 	shift

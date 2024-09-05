@@ -3,14 +3,17 @@ This is a tool born as a creative outlet rather than one born from necessity.
 
 ### Uses
 [forge --setup] searches a directory for all forge related directories and files, and if absent then it will create them. This command does not overwrite any existing files.
-Files created:
+items created:
 - main.cpp
 - ./src/PRJ_NAME.cpp
 - ./include/PRJ_NAME.h
+- ./util/timestamps
+
 Directories created:
 - ./build/
 - ./include/
 - ./src/
+- ./.util/
 
 When you have setup the project directory with forge and have ensured that the files are compilable as C++ simply type [forge] and Forge will do the rest.
 Steps take by Forge:

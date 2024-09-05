@@ -8,10 +8,12 @@
 # | and compile multi-directory c++ projects based on my own 		|
 # | preferences (and really just because I like making my own tools).	|
 # |									|
+# |									|
 #___________VERSION__________ 						|
 #			     |						|
-	forge_ver=0.25	    #|			created: 	29AUG24	|
+	forge_ver=0.30	    #|			created: 	29AUG24	|
 #____________________________|						|
+# |									|
 # |_____________________________________________________________________|
 
 #				   ***
@@ -31,93 +33,128 @@ LINKAGE_FILE=${BLD_PATH}linkage
 #  _____________________________________________________________________
 # |			FUNCTION DEFINITIONS				|
 # |_____________________________________________________________________|
-function setup_prj_dir() {
-	local verbose=""
-	local fancy="created\e[32;1m+\e[30;1m-->\e[0m"
-	if [[ ! -d "${BLD_PATH}" ]]; then
-		mkdir ./build
-		verbose="$verbose$fancy$BLD_PATH\n"
-	fi
-	if [[ ! -d "${SRC_PATH}" ]]; then
-		mkdir ./src
-		verbose="$verbose$fancy$SRC_PATH\n"
-	fi
-	if [[ ! -d "${INC_PATH}" ]]; then
-		mkdir ./include
-		verbose="$verbose$fancy$INC_PATH\n"
-	fi
-	if [[ ! -e "main.cpp" ]]; then
-		touch main.cpp
-		echo '#include' \"${INC_PATH}${PRJ_NAME}.h\" > main.cpp
-		verbose="$verbose$fancy${PRJ_PATH}main.cpp\n"
-	fi
-	if [[ ! -e "${BLD_PATH}timestamps" ]]; then
-		touch ${BLD_PATH}timestamps
-		verbose="$verbose$fancy${BLD_PATH}timestamps\n"
-	fi
-	if [[ ! -e "${SRC_PATH}$PRJ_NAME.cpp" ]]; then
-		touch ${SRC_PATH}$PRJ_NAME.cpp
-		echo '#include' \"${INC_PATH}${PRJ_NAME}.h\" > ${SRC_PATH}$PRJ_NAME.cpp
-		verbose="$verbose$fancy$SRC_PATH${PRJ_NAME}.cpp\n"
-	fi
-	if [[ ! -e "${INC_PATH}$PRJ_NAME.h" ]]; then
-		touch ${INC_PATH}$PRJ_NAME.h
-		verbose="$verbose$fancy${INC_PATH}${PRJ_NAME}.h\n"
-	fi
-	if [[ $verbose = "" ]]; then
-		verbose="No directories or files are missing. No changes made."
-	else
-		verbose="${verbose}\n\e[30;1m-- \e[32;1mset up complete\e[30;1m--\e[0m\n"
-	fi
+function assert_dirs() {
+	while [ $# -gt 0 ]; do
+		if [[ ! -d $1 ]]; then
+			return 1
+		fi
+	shift
+	done
+	return 0
+}
+
+
+function assert_files() {
+	while [ $# -gt 0 ]; do
+		if [[ ! -e $1 ]]; then
+			return 1
+		fi
+	shift
+	done
+	return 0
+}
+
+
+function echo_dirs() {
+	local missing_dirs
+	while [ $# -gt 0 ]; do
+		if [[ ! -e $1 ]]; then
+			missing_dirs="$missing_dirs $1"
+		fi
+	shift
+	done
+	echo $missing_dirs
+}
+
+
+function echo_files() {
+	local missing_files
+	while [ $# -gt 0 ]; do
+		if [[ ! -e $1 ]]; then
+			missing_files="$missing_files $1"
+		fi
+	shift
+	done
+	echo $missing_files
+}
+
+
+function mkdir_missing(){
+	while [ $# -gt 0 ]; do
+		mkdir $1
+	shift
+	done
+}
+
+
+function touch_files() {
+	while []; do
+		touch $1
+	shift
+	done
+}
+
+
+function fancify_created(){
+	local verbose
+	while [ $# -gt 0 ]; do
+		verbose="${verbose}\ncreated\e[30;1m-\e[32;1m+\e[30;1m->\e[0m$1"
+	shift
+	done
 	echo $verbose
 }
 
 
-function assert_project_files() {
-	local verbose=""
-	local fancy="missing\e[30;1m-\e[31;1mx\e[30;1m->\e[0m"
+function fancify_missing(){
+	local verbose
+	while [ $# -gt 0 ]; do
+		verbose="${verbose}\nmissing\e[30;1m-\e[31;1mx\e[30;1m->\e[0m$1"
+	shift
+	done
+	echo $verbose
+}
 
 
-	if [[ !(-d "${BLD_PATH}") ]]; then
-		verbose="${verbose}${fancy}$BLD_PATH\n"
-		verbose="${verbose}$fancy${BLD_PATH}timestamps\n"
+function create_missing_dirs() {
+	while [ $# -gt 0 ]; do
+		mkdir $1
+	shift
+	done
+}
+
+
+function create_missing_files() {
+	while [ $# -gt 0 ]; do
+		touch $1
+	shift
+	done
+}
+
+function assert_project() {
+	local error
+	error=$(assert_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH})
+	error=$(assert_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${BLD_PATH}timestamps)
+	return $error
+}
+
+
+create_missing_content() {
+	$(create_missing_dirs $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH}))
+	$(create_missing_files $(echo_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${BLD_PATH}timestamps))
+}
+
+
+function echo_missing_content() {
+	local verbose
+	if [[ $1 == "setup" ]]; then
+		verbose="$verbose$(fancify_created $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH}) )"
+		verbose="$verbose$(fancify_created $(echo_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${BLD_PATH}timestamps) )"
 	else
-		if [[ !(-e "${BLD_PATH}timestamps") ]]; then
-			verbose="${verbose}$fancy${BLD_PATH}timestamps\n"
-		fi
+		verbose="$verbose$(fancify_missing $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH}) )"
+		verbose="$verbose$(fancify_missing $(echo_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${BLD_PATH}timestamps) )"
 	fi
-
-	if [[ !(-d "${SRC_PATH}") ]]; then
-		verbose="${verbose}$fancy$SRC_PATH\n"
-		verbose="${verbose}$fancy$SRC_PATH${PRJ_NAME}.cpp\n"
-	else
-		if [[ !(-e "${SRC_PATH}$PRJ_NAME.cpp") ]]; then
-			verbose="${verbose}$fancy$SRC_PATH${PRJ_NAME}.cpp\n"
-		fi
-	fi
-
-	if [[ !(-d "${INC_PATH}") ]]; then
-		verbose="${verbose}$fancy$INC_PATH\n"
-		verbose="${verbose}$fancy${INC_PATH}${PRJ_NAME}.h\n"
-	else
-		if [[ !(-e "${INC_PATH}$PRJ_NAME.h") ]]; then
-			verbose="${verbose}$fancy${INC_PATH}${PRJ_NAME}.h\n"
-		fi
-	fi
-
-	if [[ !(-e "main.cpp") ]]; then
-		verbose="${verbose}$fancy${PRJ_PATH}main.cpp\n"
-	fi
-
-
-	if [[ $verbose != "" ]]; then
-		verbose="${verbose}\e[31;1mFILES OR DIRECTORIES MISSING. \e[0mPlease run \e[30;1m[\e[33;1mforge --setup\e[0m\e[30;1m]\e[0m to create the missing files."
-		if [[ $1 -eq 1 ]]; then
-			echo $verbose
-		fi
-		exit 1
-	fi
-	exit 0
+	
+	echo $verbose
 }
 
 
@@ -223,7 +260,7 @@ function clean_all() {
 # |			COMPILATION					|
 # |_____________________________________________________________________|
 if [[ $# -eq 0 ]]; then
-	if ($(assert_project_files 0) ); then
+	if ($(assert_project 0)); then
 		SRC_FILES=$(find -iname '*.cpp')
 		echo -e $(update_obj_files $SRC_FILES)
 		$(time_stamp $SRC_FILES)
@@ -244,7 +281,7 @@ if [[ $# -eq 0 ]]; then
 		fi
 		exit 0
 	else
-		echo -e $(assert_project_files 1)
+		echo -e $(echo_missing_content)
 		echo -e "\n\e[30;1m-- \e[31;1mforge failed \e[30;1m --\e[0m\n"
 		exit 1
 	fi
@@ -254,8 +291,11 @@ fi
 # |_____________________________________________________________________|
 while [ $# -gt 0 ]; do
 	case $1 in
-	-s | --setup-dir)
-		echo -e $(setup_prj_dir)
+	-s | --setup)
+		$(assert_project)
+		echo -e $(echo_missing_content "setup")
+		$(create_missing_content)
+		echo -e "\n\e[30;1m -- \e[33;1msetup finished \e[30;1m--\n"
 		;;
 	-l | --link) 
 		if [[ $# -eq 0 ]]; then 

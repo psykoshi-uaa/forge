@@ -11,7 +11,7 @@
 # |									|
 #___________VERSION__________ 						|
 #			     |						|
-	forge_ver=0.30	    #|			created: 	29AUG24	|
+	forge_ver=0.31	    #|			created: 	29AUG24	|
 #____________________________|						|
 # |									|
 # |_____________________________________________________________________|
@@ -28,8 +28,9 @@ PRJ_PATH=$PWD/
 BLD_PATH=${PRJ_PATH}build/
 SRC_PATH=${PRJ_PATH}src/
 INC_PATH=${PRJ_PATH}include/
+UTL_PATH=${PRJ_PATH}.util/
 
-LINKAGE_FILE=${BLD_PATH}linkage
+LINKAGE_FILE=${UTL_PATH}linkage
 #  _____________________________________________________________________
 # |			FUNCTION DEFINITIONS				|
 # |_____________________________________________________________________|
@@ -132,26 +133,26 @@ function create_missing_files() {
 
 function assert_project() {
 	local error
-	error=$(assert_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH})
-	error=$(assert_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${BLD_PATH}timestamps)
+	error=$(assert_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH} ${UTL_PATH})
+	error=$(assert_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps)
 	return $error
 }
 
 
 create_missing_content() {
-	$(create_missing_dirs $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH}))
-	$(create_missing_files $(echo_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${BLD_PATH}timestamps))
+	$(create_missing_dirs $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH} ${UTL_PATH}))
+	$(create_missing_files $(echo_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps))
 }
 
 
 function echo_missing_content() {
 	local verbose
 	if [[ $1 == "setup" ]]; then
-		verbose="$verbose$(fancify_created $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH}) )"
-		verbose="$verbose$(fancify_created $(echo_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${BLD_PATH}timestamps) )"
+		verbose="$verbose$(fancify_created $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH}) ${UTL_PATH})"
+		verbose="$verbose$(fancify_created $(echo_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps) )"
 	else
-		verbose="$verbose$(fancify_missing $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH}) )"
-		verbose="$verbose$(fancify_missing $(echo_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${BLD_PATH}timestamps) )"
+		verbose="$verbose$(fancify_missing $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH} ${UTL_PATH}) )"
+		verbose="$verbose$(fancify_missing $(echo_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps) )"
 	fi
 	
 	echo $verbose
@@ -209,9 +210,9 @@ function handle_linkage() {
 
 
 function time_stamp() {
-	echo FILE UPDATES > ${BLD_PATH}timestamps
+	echo FILE UPDATES > ${UTL_PATH}timestamps
 	while [ $# -gt 0 ]; do
-		echo $1: $(date -r $1) >> ${BLD_PATH}timestamps
+		echo $1: $(date -r $1) >> ${UTL_PATH}timestamps
 		shift
 	done
 }
@@ -223,7 +224,7 @@ function update_obj_files() {
 
 	cd ${BLD_PATH}
 	while [ $# -gt 0 ]; do
-		if [[ !($(cat ${BLD_PATH}timestamps) =~ $(echo $(date -r ${PRJ_PATH}$1)) ) ]] || [[ ! -e $(echo $1 | sed 's/cpp/o/g' | sed 's/src\///g') ]]; then
+		if [[ !($(cat ${UTL_PATH}timestamps) =~ $(echo $(date -r ${PRJ_PATH}$1)) ) ]] || [[ ! -e $(echo $1 | sed 's/cpp/o/g' | sed 's/src\///g') ]]; then
 			g++ -c ${PRJ_PATH}$1
 			which_files="$which_files \e[36m*bang* \e[0m$1\n"
 			num_files=$num_files+1
@@ -255,6 +256,7 @@ function clean_all() {
 	rm -r ${BLD_PATH}
 	rm -r ${SRC_PATH}
 	rm -r ${INC_PATH}
+	rm -r ${UTL_PATH}
 }
 #  _____________________________________________________________________
 # |			COMPILATION					|
@@ -267,7 +269,7 @@ if [[ $# -eq 0 ]]; then
 		OBJ_FILES=$(find ${BLD_PATH}*.o)
 
 
-		if [[ -e "${BLD_PATH}/linkage" ]]; then
+		if [[ -e "${UTL_PATH}/linkage" ]]; then
 			LINKAGE=$(cat $LINKAGE_FILE)
 		else
 			LINKAGE=""

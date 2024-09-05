@@ -139,7 +139,7 @@ function assert_project() {
 }
 
 
-create_missing_content() {
+function create_missing_content() {
 	$(create_missing_dirs $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH} ${UTL_PATH}))
 	$(create_missing_files $(echo_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps))
 }

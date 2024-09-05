@@ -3,11 +3,11 @@ This is a tool born as a creative outlet rather than one born from necessity.
 
 ### Uses
 [forge --setup] searches a directory for all forge related directories and files, and if absent then it will create them. This command does not overwrite any existing files.
-items created:
+Items created:
 - main.cpp
 - ./src/PRJ_NAME.cpp
 - ./include/PRJ_NAME.h
-- ./util/timestamps
+- ./.util/timestamps
 
 Directories created:
 - ./build/

@@ -89,7 +89,7 @@ function mkdir_missing(){
 
 
 function touch_files() {
-	while []; do
+	while [ $# -gt 0 ]; do
 		touch $1
 	shift
 	done
@@ -156,21 +156,6 @@ function echo_missing_content() {
 	fi
 	
 	echo $verbose
-}
-
-
-function assert_exe() {
-	local verbose=""
-	if [[ -e "${PRJ_NAME}.exe" ]]; then
-		echo "updated\e[30;1m--->\e[32;1m${PRJ_NAME}.exe\e[0m"
-	else
-		echo "created\e[30;1m--->\e[32;1m${PRJ_NAME}.exe\e[0m"
-	fi
-	if [[ $verbose != "" ]]; then
-		echo $verbose
-		exit 0
-	fi
-	exit 1
 }
 
 

@@ -11,13 +11,13 @@
 # |									|
 #___________VERSION__________ 						|
 #			     |						|
-	forge_ver=0.31	    #|			created: 	29AUG24	|
-#____________________________|						|
+        forge_ver=0.35	    #|			     created: 29AUG24	|
+#____________________________|			     updated: 5SEP24	|
 # |									|
 # |_____________________________________________________________________|
-
+#
 #				   ***
-
+#
 #  _____________________________________________________________________
 # |			GLOBAL VARIABLES				|
 # |_____________________________________________________________________|
@@ -31,6 +31,8 @@ INC_PATH=${PRJ_PATH}include/
 UTL_PATH=${PRJ_PATH}.util/
 
 LINKAGE_FILE=${UTL_PATH}linkage
+LANG_TYPE='cpp'
+GGG='g++'
 #  _____________________________________________________________________
 # |			FUNCTION DEFINITIONS				|
 # |_____________________________________________________________________|
@@ -59,7 +61,7 @@ function assert_files() {
 function echo_dirs() {
 	local missing_dirs
 	while [ $# -gt 0 ]; do
-		if [[ ! -e $1 ]]; then
+		if [[ ! -d $1 ]]; then
 			missing_dirs="$missing_dirs $1"
 		fi
 	shift
@@ -83,14 +85,6 @@ function echo_files() {
 function mkdir_missing(){
 	while [ $# -gt 0 ]; do
 		mkdir $1
-	shift
-	done
-}
-
-
-function touch_files() {
-	while [ $# -gt 0 ]; do
-		touch $1
 	shift
 	done
 }
@@ -134,34 +128,39 @@ function create_missing_files() {
 function assert_project() {
 	local error
 	error=$(assert_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH} ${UTL_PATH})
-	error=$(assert_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps)
+	error=$(assert_files ${PRJ_PATH}main.${LANG_TYPE} ${SRC_PATH}${PRJ_NAME}.${LANG_TYPE} ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps)
 	return $error
 }
 
 
 function create_missing_content() {
 	$(create_missing_dirs $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH} ${UTL_PATH}))
-	$(create_missing_files $(echo_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps))
+	$(create_missing_files $(echo_files ${PRJ_PATH}main.${LANG_TYPE} ${SRC_PATH}${PRJ_NAME}.${LANG_TYPE} ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps))
 }
 
 
 function echo_missing_content() {
 	local verbose
 	if [[ $1 == "setup" ]]; then
-		verbose="$verbose$(fancify_created $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH}) ${UTL_PATH})"
-		verbose="$verbose$(fancify_created $(echo_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps) )"
+		verbose="$(fancify_created $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH} ${UTL_PATH}) )"
+		verbose="$verbose$(fancify_created $(echo_files ${PRJ_PATH}main.${LANG_TYPE} ${SRC_PATH}${PRJ_NAME}.${LANG_TYPE} ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps) )"
+		if [[ -z verbose ]]; then
+			verbose="all necessary files and directories are present, no changes made."
+		fi
 	else
 		verbose="$verbose$(fancify_missing $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH} ${UTL_PATH}) )"
-		verbose="$verbose$(fancify_missing $(echo_files ${PRJ_PATH}main.cpp ${SRC_PATH}${PRJ_NAME}.cpp ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps) )"
+		verbose="$verbose$(fancify_missing $(echo_files ${PRJ_PATH}main.${LANG_TYPE} ${SRC_PATH}${PRJ_NAME}.${LANG_TYPE} ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps) )"
+		if [[ verbose != "" ]]; then
+			verbose="files or directories missing, type \e[30;1m[\e[033;1mforge --help\e[30;1m]\e[0m\n$verbose"
+		fi
 	fi
-	
 	echo $verbose
 }
 
 
 function help_menu() {
 	local help_text=$(echo "Forge is a multi-directory c++ Make substitute written by Calvin Michele.\n
-		\t-s --setup\t\t\t|\tSets up a directory for Forge.\n
+		\t-s --setup\t\t\t|\tSets up a directory for Forge. This will not overwrite any files or directories.\n
 		\t-l --linkage [library-name]\t|\tCreates a linkage file and writes needed linkage commands to the file.\n
 		\t-h --help\t\t\t|\tShow this menu.\n
 		\t-v --version\t\t\t|\tDisplay Forge Version [$forge_ver].\n
@@ -209,10 +208,13 @@ function update_obj_files() {
 
 	cd ${BLD_PATH}
 	while [ $# -gt 0 ]; do
-		if [[ !($(cat ${UTL_PATH}timestamps) =~ $(echo $(date -r ${PRJ_PATH}$1)) ) ]] || [[ ! -e $(echo $1 | sed 's/cpp/o/g' | sed 's/src\///g') ]]; then
-			g++ -c ${PRJ_PATH}$1
-			which_files="$which_files \e[36m*bang* \e[0m$1\n"
-			num_files=$num_files+1
+		if [[ !($(cat ${UTL_PATH}timestamps) =~ $(echo $(date -r ${PRJ_PATH}$1)) ) ]] || [[ ! -e $(echo $1 | sed 's/\.${LANG_TYPE}/\.o/g' | sed 's/src\///g') ]]; then
+			if (${GGG} -c ${PRJ_PATH}$1); then
+				which_files="$which_files \e[33;1m*bang* \e[0m$1\n"
+				num_files=$num_files+1
+			else
+				rm ${BUILD_PATH}$(echo $1 | sed 's/\.${LANG_TYPE}/\.o/g' | sed 's/src\///g')
+			fi
 		fi
 		shift
 	done
@@ -225,7 +227,7 @@ function update_obj_files() {
 
 function version() {
 	echo "Forge Version $forge_ver
-	\ncompatibile languages:\t[c++]
+	#\ncompatibile languages:\t[c++]
 	\ncompatible libraries:\t[ncurses]"
 }
 
@@ -237,18 +239,20 @@ function clean() {
 
 
 function clean_all() {
-	rm main.cpp
+	rm main.${LANG_TYPE}
 	rm -r ${BLD_PATH}
 	rm -r ${SRC_PATH}
 	rm -r ${INC_PATH}
 	rm -r ${UTL_PATH}
 }
+
+
 #  _____________________________________________________________________
 # |			COMPILATION					|
 # |_____________________________________________________________________|
 if [[ $# -eq 0 ]]; then
 	if ($(assert_project 0)); then
-		SRC_FILES=$(find -iname '*.cpp')
+		SRC_FILES=$(find -iname '*.${LANG_TYPE}')
 		echo -e $(update_obj_files $SRC_FILES)
 		$(time_stamp $SRC_FILES)
 		OBJ_FILES=$(find ${BLD_PATH}*.o)
@@ -261,7 +265,7 @@ if [[ $# -eq 0 ]]; then
 		fi
 
 
-		if (g++ -o $PRJ_EXE $OBJ_FILES $LINKAGE); then
+		if (${GGG} -o $PRJ_EXE $OBJ_FILES $LINKAGE); then
 			echo -e "\e[30;1m-- \e[32;1mforge succesful \e[30;1m --\e[0m\n"
 		else
 			echo -e "\n\e[30;1m-- \e[31;1mforge failed \e[30;1m --\e[0m\n"
@@ -273,13 +277,14 @@ if [[ $# -eq 0 ]]; then
 		exit 1
 	fi
 fi
+
+
 #  _____________________________________________________________________
 # |			HANDLE FLAGS					|
 # |_____________________________________________________________________|
 while [ $# -gt 0 ]; do
 	case $1 in
 	-s | --setup)
-		$(assert_project)
 		echo -e $(echo_missing_content "setup")
 		$(create_missing_content)
 		echo -e "\n\e[30;1m -- \e[33;1msetup finished \e[30;1m--\n"

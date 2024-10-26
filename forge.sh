@@ -159,7 +159,7 @@ function echo_missing_content() {
 
 
 function help_menu() {
-	local help_text=$(echo "Forge is a multi-directory c++ Make substitute written by Calvin Michele.\n
+	local help_text=$(echo "Forge is a multi-directory c/c++ Make substitute written by Calvin Michele.\n
 		\t-s --setup\t\t\t|\tSets up a directory for Forge. This will not overwrite any files or directories.\n
 		\t-l --linkage [library-name]\t|\tCreates a linkage file and writes needed linkage commands to the file.\n
 		\t-h --help\t\t\t|\tShow this menu.\n
@@ -226,8 +226,8 @@ function update_obj_files() {
 
 
 function version() {
-	echo "Forge Version $forge_ver
-	#\ncompatibile languages:\t[c++]
+	echo "Forge Version [\e[1;33m$forge_ver\e[0m]
+	\ncompatibile languages:\t[c] [c++]
 	\ncompatible libraries:\t[ncurses]"
 }
 
@@ -252,7 +252,7 @@ function clean_all() {
 # |_____________________________________________________________________|
 if [[ $# -eq 0 ]]; then
 	if ($(assert_project 0)); then
-		SRC_FILES=$(find -iname '*.${LANG_TYPE}')
+		SRC_FILES=$(find -iname *.$LANG_TYPE)
 		echo -e $(update_obj_files $SRC_FILES)
 		$(time_stamp $SRC_FILES)
 		OBJ_FILES=$(find ${BLD_PATH}*.o)

@@ -1,4 +1,3 @@
-#!/bin/bash
 #  _____________________________________________________________________
 # |				 FORGE					|
 # |_____________________________________________________________________|
@@ -128,7 +127,7 @@ function create_missing_files() {
 function assert_project() {
 	local error
 	error=$(assert_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH} ${UTL_PATH})
-	error=$(assert_files ${PRJ_PATH}main.${LANG_TYPE} ${SRC_PATH}${PRJ_NAME}.${LANG_TYPE} ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps)
+	error=$(assert_files ${PRJ_PATH}main.${LANG_TYPE} ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps)
 	return $error
 }
 
@@ -208,7 +207,7 @@ function update_obj_files() {
 
 	cd ${BLD_PATH}
 	while [ $# -gt 0 ]; do
-		if [[ !($(cat ${UTL_PATH}timestamps) =~ $(echo $(date -r ${PRJ_PATH}$1)) ) ]] || [[ ! -e $(echo $1 | sed 's/\.${LANG_TYPE}/\.o/g' | sed 's/src\///g') ]]; then
+		if [[ !($(cat ${UTL_PATH}timestamps) =~ $(echo $(date -r ${PRJ_PATH}$1)) ) ]] || [[ ! -e $(echo $1 | sed "s/\.${LANG_TYPE}/\.o/g" | sed 's/src\///g') ]]; then
 			if (${GGG} -c ${PRJ_PATH}$1); then
 				which_files="$which_files \e[33;1m*bang* \e[0m$1\n"
 				num_files=$num_files+1
@@ -252,7 +251,7 @@ function clean_all() {
 # |_____________________________________________________________________|
 if [[ $# -eq 0 ]]; then
 	if ($(assert_project 0)); then
-		SRC_FILES=$(find -iname *.$LANG_TYPE)
+		SRC_FILES=$(find -iname "*.${LANG_TYPE}")
 		echo -e $(update_obj_files $SRC_FILES)
 		$(time_stamp $SRC_FILES)
 		OBJ_FILES=$(find ${BLD_PATH}*.o)

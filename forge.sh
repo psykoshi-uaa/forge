@@ -127,14 +127,14 @@ function create_missing_files() {
 function assert_project() {
 	local error
 	error=$(assert_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH} ${UTL_PATH})
-	error=$(assert_files ${PRJ_PATH}main.${LANG_TYPE} ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps)
+	error=$(assert_files ${PRJ_PATH}main.${LANG_TYPE} ${UTL_PATH}timestamps)
 	return $error
 }
 
 
 function create_missing_content() {
 	$(create_missing_dirs $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH} ${UTL_PATH}))
-	$(create_missing_files $(echo_files ${PRJ_PATH}main.${LANG_TYPE} ${SRC_PATH}${PRJ_NAME}.${LANG_TYPE} ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps))
+	$(create_missing_files $(echo_files ${PRJ_PATH}main.${LANG_TYPE} ${UTL_PATH}timestamps))
 }
 
 
@@ -142,13 +142,13 @@ function echo_missing_content() {
 	local verbose
 	if [[ $1 == "setup" ]]; then
 		verbose="$(fancify_created $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH} ${UTL_PATH}) )"
-		verbose="$verbose$(fancify_created $(echo_files ${PRJ_PATH}main.${LANG_TYPE} ${SRC_PATH}${PRJ_NAME}.${LANG_TYPE} ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps) )"
+		verbose="$verbose$(fancify_created $(echo_files ${PRJ_PATH}main.${LANG_TYPE} ${UTL_PATH}timestamps) )"
 		if [[ -z verbose ]]; then
 			verbose="all necessary files and directories are present, no changes made."
 		fi
 	else
 		verbose="$verbose$(fancify_missing $(echo_dirs ${BLD_PATH} ${SRC_PATH} ${INC_PATH} ${UTL_PATH}) )"
-		verbose="$verbose$(fancify_missing $(echo_files ${PRJ_PATH}main.${LANG_TYPE} ${SRC_PATH}${PRJ_NAME}.${LANG_TYPE} ${INC_PATH}${PRJ_NAME}.h ${UTL_PATH}timestamps) )"
+		verbose="$verbose$(fancify_missing $(echo_files ${PRJ_PATH}main.${LANG_TYPE} ${UTL_PATH}timestamps) )"
 		if [[ verbose != "" ]]; then
 			verbose="files or directories missing, type \e[30;1m[\e[033;1mforge --help\e[30;1m]\e[0m\n$verbose"
 		fi
@@ -212,7 +212,7 @@ function update_obj_files() {
 				which_files="$which_files \e[33;1m*bang* \e[0m$1\n"
 				num_files=$num_files+1
 			else
-				rm ${BUILD_PATH}$(echo $1 | sed 's/\.${LANG_TYPE}/\.o/g' | sed 's/src\///g')
+				rm ${BUILD_PATH}$(echo $1 | sed "s/\.${LANG_TYPE}/\.o/g" | sed 's/src\///g')
 			fi
 		fi
 		shift

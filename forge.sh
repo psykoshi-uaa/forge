@@ -10,7 +10,7 @@
 # |									|
 #___________VERSION__________ 						|
 #			     |						|
-        forge_ver=0.36	    #|			     created: 29AUG24	|
+        forge_ver=0.37	    #|			     created: 29AUG24	|
 #____________________________|			     updated: 5SEP24	|
 # |									|
 # |_____________________________________________________________________|
@@ -168,6 +168,7 @@ function help_menu() {
 	local help_text=$(echo "Forge is a multi-directory c/c++ Make substitute written by Calvin Michele.\n
 		\t-s --setup\t\t\t|\tSets up a directory for Forge. This will not overwrite any files or directories.\n
 		\t-l --linkage [library-name]\t|\tCreates a linkage file and writes needed linkage commands to the file.\n
+		\t-L --Lang [Language]\t\t|\tCreates a language file that the script reads from to determine language and compiler used.\n
 		\t-h --help\t\t\t|\tShow this menu.\n
 		\t-v --version\t\t\t|\tDisplay Forge Version [$forge_ver].\n
 		\t-c --clean\t\t\t|\tremoves the .o and .exe files.\n
@@ -191,8 +192,9 @@ function set_lang() {
 
 		case $1 in
 		c|C)
-			echo "c" > $LANGUAGE_FILE
-			echo "gcc" >> $LANGUAGE_FILE
+			if [[ -e ${LANGUAGE_FILE} ]]; then
+				rm ${LANGUAGE_FILE}
+			fi
 			;;
 		cpp|CPP|c++|C++)
 			echo "cpp" > $LANGUAGE_FILE
@@ -335,7 +337,7 @@ while [ $# -gt 0 ]; do
 		echo 'sweeping...'
 		echo -e $(clean)
 		;;
-	-t | --type)
+	-L | --Lang)
 		echo -e $(set_lang $2)
 		;;
 	--clean-all)

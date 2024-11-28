@@ -219,6 +219,9 @@ function handle_linkage() {
 		ncurses)
 			echo "-lncurses" > $LINKAGE_FILE
 			;;
+		raylib)
+			echo "-lraylib -lGL -lm -lpthread -ldl -lrt -lX11" > $LINKAGE_FILE
+			;;
 		esac
 		echo "$1 link created. Your project will now compile with $1."
 	fi

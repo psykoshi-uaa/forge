@@ -40,3 +40,4 @@ Forge currently takes the project directory name and automatically uses that as 
 If you would like to link a library just type [forge -l {name_of_lib}] and a linkage file will be created with the necessary commands added. These commands will be added and appended to the project compilation.
 Currently supported libraries:
 	ncurses
+	raylib

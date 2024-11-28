@@ -32,12 +32,6 @@ To undo this change type [forge -L c] or delete the .util/language file.
 #### Misc
 Forge currently takes the project directory name and automatically uses that as the project name.
 
-#### Roadmap
-1. add a way for users to add libraries to their [forge -l] command.
-2. Rewrite the setup and asser_prj_files functions as they are virtually the same, (merge?).
-3. Add more compatible default libraries.
-4. More user customization, (config?). 
-
 ### Linkage
 If you would like to link a library just type [forge -l {name_of_lib}] and a linkage
 file will be created with the necessary commands added. These commands will be added

@@ -30,8 +30,15 @@ INC_PATH=${PRJ_PATH}include/
 UTL_PATH=${PRJ_PATH}.util/
 
 LINKAGE_FILE=${UTL_PATH}linkage
-LANG_TYPE='cpp'
-GGG='g++'
+LANGUAGE_FILE=${UTL_PATH}language
+LANG_TYPE='c'
+GGG='gcc'
+
+if [[ -e "${LANGUAGE_FILE}" ]]; then
+	LANG_TYPE=$(awk 'NR==1' $LANGUAGE_FILE)
+	GGG=$(awk 'NR==2' $LANGUAGE_FILE)
+fi
+
 #  _____________________________________________________________________
 # |			FUNCTION DEFINITIONS				|
 # |_____________________________________________________________________|
@@ -173,6 +180,30 @@ function help_menu() {
 }
 
 
+function set_lang() {
+	if [[ $# -eq 0 ]]; then
+		echo "No languages indicated, currently accepted languages are: [C] [C++]"
+		exit 1
+	else
+		if [[ !(-e "$LANGUAGE_FILE") ]]; then
+			touch $LANGUAGE_FILE
+		fi
+
+		case $1 in
+		c|C)
+			echo "c" > $LANGUAGE_FILE
+			echo "gcc" >> $LANGUAGE_FILE
+			;;
+		cpp|CPP|c++|C++)
+			echo "cpp" > $LANGUAGE_FILE
+			echo "g++" >> $LANGUAGE_FILE
+			;;
+		esac
+		echo "$1 set as project language. Your project will now compile with $1."
+	fi
+}
+
+
 function handle_linkage() {
 	if [[ $# -eq 0 ]]; then
 		echo "No libraries indicated, currently accepted libraries are: [ncurses]"
@@ -256,7 +287,6 @@ if [[ $# -eq 0 ]]; then
 		$(time_stamp $SRC_FILES)
 		OBJ_FILES=$(find ${BLD_PATH}*.o)
 
-
 		if [[ -e "${UTL_PATH}/linkage" ]]; then
 			LINKAGE=$(cat $LINKAGE_FILE)
 		else
@@ -305,9 +335,13 @@ while [ $# -gt 0 ]; do
 		echo 'sweeping...'
 		echo -e $(clean)
 		;;
+	-t | --type)
+		echo -e $(set_lang $2)
+		;;
 	--clean-all)
 		echo 'sweeping...'
 		echo -e $(clean_all)
+		;;
 	esac
 	shift
 done

@@ -221,7 +221,10 @@ function handle_linkage() {
 			;;
 		raylib)
 			echo "-lraylib -lGL -lm -lpthread -ldl -lrt -lX11" > $LINKAGE_FILE
-			;;
+			;;   
+   		gl)
+                        echo "-lGL -lGLU -lglut" > $LINKAGE_FILE
+                        ;;
 		esac
 		echo "$1 link created. Your project will now compile with $1."
 	fi

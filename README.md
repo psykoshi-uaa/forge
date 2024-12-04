@@ -42,3 +42,4 @@ to the other libraries.
 Currently supported libraries:
 	ncurses
 	raylib
+ 	gl

@@ -5,7 +5,7 @@ This is a tool born as a creative outlet rather than one born from necessity.
 [forge --setup] searches a directory for all forge related directories and files
 and if any are absent, it will create them. This command does not overwrite any existing files.
 
-Files created:
+Files created by --setup:
 - main.cpp
 - ./.util/timestamps
 
